@@ -141,6 +141,25 @@ body::before {
   height: 100% !important;
 }
 
+.setup-photo {
+  margin: 14px 0 0;
+}
+
+.setup-photo img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 6px;
+  border: 1px solid rgb(var(--solar-card-border-rgb));
+}
+
+.setup-photo figcaption {
+  margin-top: 8px;
+  color: rgb(var(--solar-subtle-rgb));
+  font-size: 0.9rem;
+  transition: color 0.9s ease;
+}
+
 .site-footer {
   font-size: 0.82rem;
   color: rgb(var(--solar-subtle-rgb));

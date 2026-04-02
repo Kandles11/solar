@@ -339,6 +339,27 @@ function handleStatic(req, res, pathname) {
     return;
   }
 
+  const safePath = path.normalize(pathname).replace(/^(\.\.[/\\])+/, "");
+  const fullPath = path.join(PUBLIC_DIR, safePath);
+  if (!fullPath.startsWith(PUBLIC_DIR)) {
+    sendJson(res, 403, { error: "Forbidden" });
+    return;
+  }
+
+  const ext = path.extname(fullPath).toLowerCase();
+  const contentTypes = {
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".png": "image/png",
+    ".gif": "image/gif",
+    ".webp": "image/webp",
+    ".svg": "image/svg+xml"
+  };
+  if (contentTypes[ext]) {
+    sendFile(res, fullPath, contentTypes[ext]);
+    return;
+  }
+
   sendJson(res, 404, { error: "Not found" });
 }
 

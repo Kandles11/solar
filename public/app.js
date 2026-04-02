@@ -5,7 +5,7 @@ const todayKwhEl = document.getElementById("todayKwh");
 const todayValueEl = document.getElementById("todayValue");
 const acWattsEl = document.getElementById("acWatts");
 const chartCanvas = document.getElementById("historyChart");
-const MAX_SOLAR_WATTS = 95;
+const MAX_SOLAR_WATTS = 91;
 
 let chart;
 let currentTheme = null;
@@ -44,21 +44,24 @@ function applySolarBackground(reading, todaySummary) {
   const currentWatts = Number(reading?.watts ?? 0);
   const ratio = Math.max(0, Math.min(1, currentWatts / MAX_SOLAR_WATTS));
   const blend = 1 - ratio;
+  // Ease theme transitions to avoid low-contrast muddy middle tones.
+  const surfaceBlend = Math.pow(blend, 0.8);
+  const textBlend = Math.pow(blend, 0.5);
 
-  function lerpColor(bright, dark) {
-    const r = Math.round(bright[0] + (dark[0] - bright[0]) * blend);
-    const g = Math.round(bright[1] + (dark[1] - bright[1]) * blend);
-    const b = Math.round(bright[2] + (dark[2] - bright[2]) * blend);
+  function lerpColor(bright, dark, t = surfaceBlend) {
+    const r = Math.round(bright[0] + (dark[0] - bright[0]) * t);
+    const g = Math.round(bright[1] + (dark[1] - bright[1]) * t);
+    const b = Math.round(bright[2] + (dark[2] - bright[2]) * t);
     return `${r}, ${g}, ${b}`;
   }
 
   currentTheme = {
-    text: lerpColor([31, 26, 20], [232, 238, 246]),
+    text: lerpColor([31, 26, 20], [236, 242, 248], textBlend),
     bg: lerpColor([243, 238, 224], [13, 17, 23]),
     bannerBg: lerpColor([61, 45, 31], [7, 10, 15]),
-    bannerText: lerpColor([247, 239, 224], [226, 234, 244]),
-    subtle: lerpColor([79, 65, 50], [151, 166, 183]),
-    muted: lerpColor([125, 102, 76], [116, 132, 151]),
+    bannerText: lerpColor([247, 239, 224], [232, 239, 247], textBlend),
+    subtle: lerpColor([79, 65, 50], [162, 176, 193], textBlend),
+    muted: lerpColor([125, 102, 76], [132, 147, 166], textBlend),
     cardBg: lerpColor([255, 249, 235], [23, 29, 38]),
     cardBorder: lerpColor([204, 187, 159], [52, 64, 79]),
     shadow: lerpColor([30, 20, 10], [2, 4, 7]),
@@ -66,7 +69,7 @@ function applySolarBackground(reading, todaySummary) {
     ok: lerpColor([46, 114, 70], [92, 220, 149]),
     warning: lerpColor([158, 63, 31], [255, 148, 112]),
     grain: lerpColor([60, 45, 30], [235, 242, 252]),
-    grainOpacity: (0.4 - blend * 0.2).toFixed(3)
+    grainOpacity: (0.38 - surfaceBlend * 0.18).toFixed(3)
   };
 
   document.body.style.setProperty("--solar-text-rgb", currentTheme.text);
