@@ -8,6 +8,9 @@
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
   </head>
   <body>
+    <div id="batteryFillBand" aria-hidden="true">
+      <div id="batteryFillLabel">BATTERY: --%</div>
+    </div>
     <div class="solar-banner">This is a solar-powered website. Data updates may pause during outages.</div>
     <main class="container">
       <header class="site-header">
@@ -22,6 +25,7 @@
         <p id="lastUpdated">Waiting for data...</p>
         <div class="daily-stats">
           <p><strong>EcoFlow AC Output:</strong> <span id="acWatts">-- W</span></p>
+          <p><strong>Battery SOC:</strong> <span id="batterySoc">-- %</span></p>
           <p><strong>Today:</strong> <span id="todayKwh">-- kWh</span></p>
           <p><strong>Value:</strong> <span id="todayValue">--</span></p>
         </div>

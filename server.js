@@ -8,6 +8,8 @@ const HA_BASE_URL = process.env.HA_BASE_URL || "";
 const HA_TOKEN = process.env.HA_TOKEN || "";
 const HA_SENSOR_ENTITY_ID = process.env.HA_SENSOR_ENTITY_ID || "";
 const HA_AC_OUTPUT_ENTITY_ID = process.env.HA_AC_OUTPUT_ENTITY_ID || "";
+const HA_BATTERY_SOC_ENTITY_ID =
+  process.env.HA_BATTERY_SOC_ENTITY_ID || "sensor.river_2_max_battery_level";
 const DEBUG_HA = String(process.env.DEBUG_HA || "").toLowerCase() === "true";
 const POLL_SECONDS = Math.max(5, Number(process.env.POLL_SECONDS || 10));
 const COST_RATE_USD_PER_KWH = Number(process.env.COST_RATE_USD_PER_KWH || 0.33);
@@ -229,6 +231,16 @@ async function fetchFromHomeAssistant() {
     }
   }
 
+  if (HA_BATTERY_SOC_ENTITY_ID) {
+    const batteryResult = await fetchSensorWatts(HA_BATTERY_SOC_ENTITY_ID);
+    if (batteryResult.ok) {
+      reading.batterySoc = batteryResult.watts;
+      reading.batterySocSource = HA_BATTERY_SOC_ENTITY_ID;
+    } else {
+      reading.batteryError = batteryResult.error;
+    }
+  }
+
   return { ok: true, reading };
 }
 
@@ -281,6 +293,7 @@ function handleApi(req, res, pathname) {
       ok: true,
       configured: Boolean(HA_BASE_URL && HA_TOKEN && HA_SENSOR_ENTITY_ID),
       acConfigured: Boolean(HA_AC_OUTPUT_ENTITY_ID),
+      batteryConfigured: Boolean(HA_BATTERY_SOC_ENTITY_ID),
       clients: clients.size
     });
     return true;

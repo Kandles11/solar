@@ -4,6 +4,8 @@ const statusEl = document.getElementById("status");
 const todayKwhEl = document.getElementById("todayKwh");
 const todayValueEl = document.getElementById("todayValue");
 const acWattsEl = document.getElementById("acWatts");
+const batterySocEl = document.getElementById("batterySoc");
+const batteryFillLabelEl = document.getElementById("batteryFillLabel");
 const chartEl = document.getElementById("historyChart");
 const rangePresetEl = document.getElementById("rangePreset");
 
@@ -26,6 +28,20 @@ function renderCurrent(reading) {
     acWattsEl.textContent = `Unavailable (${reading.acError})`;
   } else {
     acWattsEl.textContent = "-- W";
+  }
+  if (Number.isFinite(Number(reading.batterySoc))) {
+    const soc = Math.max(0, Math.min(100, Number(reading.batterySoc)));
+    batterySocEl.textContent = `${soc.toFixed(0)} %`;
+    document.body.style.setProperty("--battery-soc-pct", `${soc.toFixed(0)}%`);
+    batteryFillLabelEl.textContent = `BATTERY: ${soc.toFixed(0)}%`;
+  } else if (reading.batteryError) {
+    batterySocEl.textContent = `Unavailable (${reading.batteryError})`;
+    document.body.style.setProperty("--battery-soc-pct", "0%");
+    batteryFillLabelEl.textContent = "BATTERY: --%";
+  } else {
+    batterySocEl.textContent = "-- %";
+    document.body.style.setProperty("--battery-soc-pct", "0%");
+    batteryFillLabelEl.textContent = "BATTERY: --%";
   }
   lastUpdatedEl.textContent = `Last updated: ${formatTimestamp(reading.timestamp)}`;
   statusEl.textContent = reading.error ? `Warning: ${reading.error}` : "Connected";
