@@ -62,8 +62,12 @@ function applySolarBackground(reading) {
   const currentWatts = Number(reading?.watts ?? 0);
   const ratio = Math.max(0, Math.min(1, currentWatts / MAX_SOLAR_WATTS));
   const blend = 1 - ratio;
-  const surfaceBlend = Math.pow(blend, 0.8);
-  const textBlend = Math.pow(blend, 0.5);
+  const surfaceBlend = Math.pow(blend, 0.9);
+  // Hold readable "light" foreground colors longer, then transition decisively.
+  const textPhase = Math.max(0, Math.min(1, (blend - 0.48) / 0.52));
+  const textBlend = Math.pow(textPhase, 0.7);
+  // Keep cards offset from page background to preserve contrast in mid states.
+  const cardBlend = Math.pow(blend, 1.25);
 
   function lerpColor(bright, dark, t = surfaceBlend) {
     const r = Math.round(bright[0] + (dark[0] - bright[0]) * t);
@@ -79,8 +83,8 @@ function applySolarBackground(reading) {
     bannerText: lerpColor([247, 239, 224], [232, 239, 247], textBlend),
     subtle: lerpColor([79, 65, 50], [162, 176, 193], textBlend),
     muted: lerpColor([125, 102, 76], [132, 147, 166], textBlend),
-    cardBg: lerpColor([255, 249, 235], [23, 29, 38]),
-    cardBorder: lerpColor([204, 187, 159], [52, 64, 79]),
+    cardBg: lerpColor([255, 249, 235], [23, 29, 38], cardBlend),
+    cardBorder: lerpColor([204, 187, 159], [52, 64, 79], cardBlend),
     shadow: lerpColor([30, 20, 10], [2, 4, 7]),
     accent: lerpColor([188, 109, 29], [255, 193, 94]),
     ok: lerpColor([46, 114, 70], [92, 220, 149]),
@@ -108,9 +112,12 @@ function applySolarBackground(reading) {
 function filterPointsByPreset(points, preset) {
   if (preset === "all") return points;
   const latestTs = points[points.length - 1]?.timestamp ?? Date.now();
+  const minute = 60 * 1000;
   const hour = 60 * 60 * 1000;
   const day = 24 * hour;
   let windowMs = day;
+  if (preset === "5m") windowMs = 5 * minute;
+  if (preset === "30m") windowMs = 30 * minute;
   if (preset === "1h") windowMs = hour;
   if (preset === "6h") windowMs = 6 * hour;
   if (preset === "24h") windowMs = day;
