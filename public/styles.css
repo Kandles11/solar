@@ -220,6 +220,13 @@ body::before {
   height: 100% !important;
 }
 
+.range-total {
+  margin: 10px 0 2px;
+  color: rgb(var(--solar-subtle-rgb));
+  font-size: 0.95rem;
+  transition: color 0.9s ease;
+}
+
 .setup-photo {
   margin: 14px 0 0;
 }

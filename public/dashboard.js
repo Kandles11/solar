@@ -6,6 +6,7 @@ const todayValueEl = document.getElementById("todayValue");
 const acWattsEl = document.getElementById("acWatts");
 const batterySocEl = document.getElementById("batterySoc");
 const batteryFillLabelEl = document.getElementById("batteryFillLabel");
+const rangeKwhEl = document.getElementById("rangeKwh");
 const chartEl = document.getElementById("historyChart");
 const rangePresetEl = document.getElementById("rangePreset");
 
@@ -126,8 +127,26 @@ function filterPointsByPreset(points, preset) {
   return points.filter((p) => p.timestamp >= start && p.timestamp <= latestTs);
 }
 
+function computeRangeKwh(points) {
+  if (!Array.isArray(points) || points.length < 2) return 0;
+  const sorted = [...points].sort((a, b) => a.timestamp - b.timestamp);
+  let wattHours = 0;
+  for (let i = 1; i < sorted.length; i += 1) {
+    const prev = sorted[i - 1];
+    const cur = sorted[i];
+    if (!Number.isFinite(prev.watts) || !Number.isFinite(cur.watts)) continue;
+    const dtHours = (cur.timestamp - prev.timestamp) / (60 * 60 * 1000);
+    if (dtHours <= 0) continue;
+    const avgWatts = (prev.watts + cur.watts) / 2;
+    wattHours += avgWatts * dtHours;
+  }
+  return wattHours / 1000;
+}
+
 function buildChartOption(points) {
   const filtered = filterPointsByPreset(points, rangePresetEl.value);
+  const rangeKwh = computeRangeKwh(filtered);
+  rangeKwhEl.textContent = `${rangeKwh.toFixed(3)} kWh`;
   const hasAcSeries = filtered.some((p) => Number.isFinite(Number(p.acWatts)));
   const textColor = currentTheme ? `rgb(${currentTheme.text})` : "#2c2218";
   const subtleColor = currentTheme ? `rgb(${currentTheme.subtle})` : "#4f4132";
