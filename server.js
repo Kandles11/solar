@@ -52,13 +52,19 @@ function sendJson(res, statusCode, body) {
   res.end(JSON.stringify(body));
 }
 
-function sendFile(res, filePath, contentType) {
+function sendFile(res, filePath, contentType, extraHeaders = {}) {
   fs.readFile(filePath, (err, data) => {
     if (err) {
       sendJson(res, 404, { error: "File not found" });
       return;
     }
-    res.writeHead(200, { "Content-Type": contentType });
+    res.writeHead(200, {
+      "Content-Type": contentType,
+      "Cache-Control": "no-store, max-age=0",
+      Pragma: "no-cache",
+      Expires: "0",
+      ...extraHeaders
+    });
     res.end(data);
   });
 }
