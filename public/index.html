@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Solar Production Dashboard</title>
     <link rel="stylesheet" href="/styles.css" />
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
   </head>
   <body>
     <div class="solar-banner">This is a solar-powered website. Data updates may pause during outages.</div>
@@ -30,8 +30,18 @@
 
       <section class="card">
         <h2>History</h2>
+        <div class="history-controls">
+          <label for="rangePreset">Range</label>
+          <select id="rangePreset">
+            <option value="1h">Last 1 hour</option>
+            <option value="6h">Last 6 hours</option>
+            <option value="24h" selected>Last 24 hours</option>
+            <option value="7d">Last 7 days</option>
+            <option value="all">All</option>
+          </select>
+        </div>
         <div class="chart-wrap">
-          <canvas id="historyChart"></canvas>
+          <div id="historyChart"></div>
         </div>
         <figure class="setup-photo">
           <img src="/solar.jpg" alt="Solar setup" />
@@ -42,6 +52,6 @@
       <footer class="site-footer">Powered by Home Assistant sensor telemetry.</footer>
     </main>
 
-    <script src="/app.js"></script>
+    <script src="/dashboard.js"></script>
   </body>
 </html>

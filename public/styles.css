@@ -136,6 +136,52 @@ body::before {
   width: 100%;
 }
 
+.history-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin: 4px 0 12px;
+}
+
+.history-controls label {
+  color: rgb(var(--solar-subtle-rgb));
+  font-size: 0.9rem;
+}
+
+.history-controls select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background: rgb(var(--solar-card-bg-rgb));
+  color: rgb(var(--solar-text-rgb));
+  border: 1px solid rgb(var(--solar-card-border-rgb));
+  border-radius: 6px;
+  padding: 7px 36px 7px 10px;
+  font-family: inherit;
+  font-size: 0.92rem;
+  line-height: 1.2;
+  font-weight: 400;
+  min-width: 170px;
+  cursor: pointer;
+  background-image: linear-gradient(45deg, transparent 50%, rgb(var(--solar-subtle-rgb)) 50%),
+    linear-gradient(135deg, rgb(var(--solar-subtle-rgb)) 50%, transparent 50%);
+  background-position: calc(100% - 16px) calc(50% - 2px), calc(100% - 10px) calc(50% - 2px);
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.history-controls select:hover {
+  border-color: rgb(var(--solar-accent-rgb));
+}
+
+.history-controls select:focus {
+  outline: none;
+  border-color: rgb(var(--solar-accent-rgb));
+  box-shadow: 0 0 0 2px rgba(var(--solar-accent-rgb), 0.22);
+}
+
 #historyChart {
   width: 100% !important;
   height: 100% !important;

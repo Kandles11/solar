@@ -4,11 +4,14 @@ const statusEl = document.getElementById("status");
 const todayKwhEl = document.getElementById("todayKwh");
 const todayValueEl = document.getElementById("todayValue");
 const acWattsEl = document.getElementById("acWatts");
-const chartCanvas = document.getElementById("historyChart");
+const chartEl = document.getElementById("historyChart");
+const rangePresetEl = document.getElementById("rangePreset");
+
 const MAX_SOLAR_WATTS = 91;
 
 let chart;
 let currentTheme = null;
+let allHistoryPoints = [];
 
 function formatTimestamp(ms) {
   return new Date(ms).toLocaleString();
@@ -35,16 +38,14 @@ function renderTodaySummary(todaySummary) {
     todayValueEl.textContent = "--";
     return;
   }
-
   todayKwhEl.textContent = `${todaySummary.kwh.toFixed(3)} kWh`;
   todayValueEl.textContent = `$${todaySummary.costUsd.toFixed(2)} @ $${todaySummary.rateUsdPerKwh.toFixed(2)}/kWh`;
 }
 
-function applySolarBackground(reading, todaySummary) {
+function applySolarBackground(reading) {
   const currentWatts = Number(reading?.watts ?? 0);
   const ratio = Math.max(0, Math.min(1, currentWatts / MAX_SOLAR_WATTS));
   const blend = 1 - ratio;
-  // Ease theme transitions to avoid low-contrast muddy middle tones.
   const surfaceBlend = Math.pow(blend, 0.8);
   const textBlend = Math.pow(blend, 0.5);
 
@@ -86,117 +87,111 @@ function applySolarBackground(reading, todaySummary) {
   document.body.style.setProperty("--solar-warning-rgb", currentTheme.warning);
   document.body.style.setProperty("--solar-grain-rgb", currentTheme.grain);
   document.body.style.setProperty("--solar-grain-opacity", currentTheme.grainOpacity);
-
-  if (chart) {
-    const legendColor = `rgb(${currentTheme.text})`;
-    const tickColor = `rgb(${currentTheme.subtle})`;
-    const gridBase = currentTheme.subtle;
-    chart.options.scales.y.grid.color = `rgba(${gridBase}, 0.24)`;
-    chart.options.scales.x.grid.color = `rgba(${gridBase}, 0.18)`;
-    chart.options.scales.y.ticks.color = tickColor;
-    chart.options.scales.x.ticks.color = tickColor;
-    chart.options.plugins.legend.labels.color = legendColor;
-  }
 }
 
-function renderChart(points) {
-  const labels = points.map((p) => new Date(p.timestamp).toLocaleTimeString());
-  const solarValues = points.map((p) => p.watts);
-  const hasAcSeries = points.some((p) => Number.isFinite(Number(p.acWatts)));
-  const acValues = points.map((p) =>
-    Number.isFinite(Number(p.acWatts)) ? Number(p.acWatts) : null
-  );
+function filterPointsByPreset(points, preset) {
+  if (preset === "all") return points;
+  const latestTs = points[points.length - 1]?.timestamp ?? Date.now();
+  const hour = 60 * 60 * 1000;
+  const day = 24 * hour;
+  let windowMs = day;
+  if (preset === "1h") windowMs = hour;
+  if (preset === "6h") windowMs = 6 * hour;
+  if (preset === "24h") windowMs = day;
+  if (preset === "7d") windowMs = 7 * day;
+  const start = latestTs - windowMs;
+  return points.filter((p) => p.timestamp >= start && p.timestamp <= latestTs);
+}
 
-  const datasets = [
+function buildChartOption(points) {
+  const filtered = filterPointsByPreset(points, rangePresetEl.value);
+  const hasAcSeries = filtered.some((p) => Number.isFinite(Number(p.acWatts)));
+  const textColor = currentTheme ? `rgb(${currentTheme.text})` : "#2c2218";
+  const subtleColor = currentTheme ? `rgb(${currentTheme.subtle})` : "#4f4132";
+  const gridColor = currentTheme ? `rgba(${currentTheme.subtle}, 0.2)` : "rgba(89, 70, 48, 0.16)";
+  const accentColor = currentTheme ? `rgb(${currentTheme.accent})` : "#bc6d1d";
+  const acColor = currentTheme ? `rgb(${currentTheme.subtle})` : "#5a6b7d";
+
+  const series = [
     {
-      label: "Solar input (W)",
-      data: solarValues,
-      borderColor: currentTheme ? `rgb(${currentTheme.accent})` : "#bc6d1d",
-      backgroundColor: currentTheme
-        ? `rgba(${currentTheme.accent}, 0.16)`
-        : "rgba(188, 109, 29, 0.16)",
-      borderWidth: 2,
-      tension: 0.2,
-      pointRadius: 0
+      name: "Solar input (W)",
+      type: "line",
+      smooth: true,
+      showSymbol: false,
+      lineStyle: { width: 2, color: accentColor },
+      data: filtered.map((p) => [p.timestamp, p.watts])
     }
   ];
 
   if (hasAcSeries) {
-    datasets.push({
-      label: "EcoFlow AC output (W)",
-      data: acValues,
-      borderColor: currentTheme ? `rgb(${currentTheme.subtle})` : "#5a6b7d",
-      backgroundColor: currentTheme
-        ? `rgba(${currentTheme.subtle}, 0.2)`
-        : "rgba(90, 107, 125, 0.14)",
-      borderWidth: 2,
-      tension: 0.2,
-      pointRadius: 0,
-      spanGaps: true
-    });
-  }
-
-  if (!chart) {
-    chart = new Chart(chartCanvas, {
+    series.push({
+      name: "EcoFlow AC output (W)",
       type: "line",
-      data: {
-        labels,
-        datasets
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          y: {
-            beginAtZero: true,
-            grid: {
-              color: "rgba(89, 70, 48, 0.16)"
-            },
-            ticks: {
-              color: currentTheme ? `rgb(${currentTheme.subtle})` : "#4f4132"
-            }
-          },
-          x: {
-            grid: {
-              color: "rgba(89, 70, 48, 0.12)"
-            },
-            ticks: {
-              color: currentTheme ? `rgb(${currentTheme.subtle})` : "#4f4132",
-              maxTicksLimit: 9
-            }
-          }
-        },
-        plugins: {
-          legend: {
-            labels: {
-              color: currentTheme ? `rgb(${currentTheme.text})` : "#2c2218"
-            }
-          }
-        }
-      }
+      smooth: true,
+      showSymbol: false,
+      connectNulls: true,
+      lineStyle: { width: 2, color: acColor },
+      data: filtered.map((p) => [p.timestamp, Number.isFinite(Number(p.acWatts)) ? Number(p.acWatts) : null])
     });
-    return;
   }
 
-  chart.data.labels = labels;
-  chart.data.datasets = datasets;
-  chart.update("none");
+  return {
+    animation: false,
+    textStyle: { color: textColor },
+    tooltip: {
+      trigger: "axis",
+      valueFormatter: (value) => `${Number(value).toFixed(0)} W`
+    },
+    legend: { top: 2, textStyle: { color: textColor } },
+    grid: { left: 55, right: 20, top: 46, bottom: 72 },
+    xAxis: {
+      type: "time",
+      axisLine: { lineStyle: { color: subtleColor } },
+      axisLabel: { color: subtleColor },
+      splitLine: { lineStyle: { color: gridColor } }
+    },
+    yAxis: {
+      type: "value",
+      min: 0,
+      axisLine: { lineStyle: { color: subtleColor } },
+      axisLabel: { color: subtleColor },
+      splitLine: { lineStyle: { color: gridColor } }
+    },
+    dataZoom: [
+      { type: "inside", xAxisIndex: 0, filterMode: "none" },
+      { type: "slider", xAxisIndex: 0, height: 24, bottom: 24 }
+    ],
+    series
+  };
+}
+
+function ensureChart() {
+  if (chart) return;
+  chart = echarts.init(chartEl);
+  window.addEventListener("resize", () => chart.resize());
+}
+
+function renderChart(points) {
+  ensureChart();
+  chart.setOption(buildChartOption(points), true);
+}
+
+function bindHistoryControls() {
+  rangePresetEl.addEventListener("change", () => renderChart(allHistoryPoints));
 }
 
 async function bootstrap() {
+  bindHistoryControls();
   try {
-    const [currentRes, historyRes] = await Promise.all([
-      fetch("/api/current"),
-      fetch("/api/history")
-    ]);
-
+    const [currentRes, historyRes] = await Promise.all([fetch("/api/current"), fetch("/api/history")]);
     const currentJson = await currentRes.json();
     const historyJson = await historyRes.json();
 
     renderCurrent(currentJson.current);
     renderTodaySummary(currentJson.todaySummary);
-    applySolarBackground(currentJson.current, currentJson.todaySummary);
-    renderChart(historyJson.points || []);
+    applySolarBackground(currentJson.current);
+    allHistoryPoints = historyJson.points || [];
+    renderChart(allHistoryPoints);
   } catch (err) {
     statusEl.textContent = `Failed to load initial data: ${err.message}`;
     statusEl.className = "status warning";
@@ -209,12 +204,13 @@ async function bootstrap() {
 
     renderCurrent(payload.data);
     renderTodaySummary(payload.todaySummary);
-    applySolarBackground(payload.data, payload.todaySummary);
+    applySolarBackground(payload.data);
 
     try {
       const historyRes = await fetch("/api/history");
       const historyJson = await historyRes.json();
-      renderChart(historyJson.points || []);
+      allHistoryPoints = historyJson.points || [];
+      renderChart(allHistoryPoints);
     } catch (_err) {
       // Keep current reading visible even if history refresh fails.
     }

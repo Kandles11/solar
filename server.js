@@ -348,6 +348,8 @@ function handleStatic(req, res, pathname) {
 
   const ext = path.extname(fullPath).toLowerCase();
   const contentTypes = {
+    ".js": "application/javascript; charset=utf-8",
+    ".css": "text/css; charset=utf-8",
     ".jpg": "image/jpeg",
     ".jpeg": "image/jpeg",
     ".png": "image/png",
