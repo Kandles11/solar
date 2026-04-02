@@ -1,0 +1,150 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  --solar-bg-rgb: 243, 238, 224;
+  --solar-text-rgb: 31, 26, 20;
+  --solar-banner-bg-rgb: 61, 45, 31;
+  --solar-banner-text-rgb: 247, 239, 224;
+  --solar-subtle-rgb: 79, 65, 50;
+  --solar-muted-rgb: 125, 102, 76;
+  --solar-card-bg-rgb: 255, 249, 235;
+  --solar-card-border-rgb: 204, 187, 159;
+  --solar-shadow-rgb: 30, 20, 10;
+  --solar-accent-rgb: 188, 109, 29;
+  --solar-ok-rgb: 46, 114, 70;
+  --solar-warning-rgb: 158, 63, 31;
+  --solar-grain-rgb: 60, 45, 30;
+  --solar-grain-opacity: 0.4;
+  background: rgb(var(--solar-bg-rgb));
+  color: rgb(var(--solar-text-rgb));
+  line-height: 1.45;
+  transition: background-color 0.9s ease, color 0.9s ease;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image: radial-gradient(rgba(var(--solar-grain-rgb), 0.06) 0.6px, transparent 0.6px);
+  background-size: 3px 3px;
+  opacity: var(--solar-grain-opacity);
+  transition: opacity 0.9s ease;
+}
+
+.solar-banner {
+  text-align: center;
+  padding: 9px 12px;
+  background: rgb(var(--solar-banner-bg-rgb));
+  color: rgb(var(--solar-banner-text-rgb));
+  font-size: 0.82rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition: background-color 0.9s ease, color 0.9s ease;
+}
+
+.container {
+  max-width: 940px;
+  margin: 0 auto;
+  padding: 24px 20px 30px;
+  display: grid;
+  gap: 16px;
+  position: relative;
+  z-index: 1;
+}
+
+.site-header h1 {
+  margin: 2px 0 8px;
+  font-size: clamp(2rem, 5vw, 3rem);
+  line-height: 1.08;
+}
+
+.kicker {
+  margin: 0;
+  color: rgb(var(--solar-muted-rgb));
+  font-size: 0.76rem;
+  letter-spacing: 0.14em;
+  transition: color 0.9s ease;
+}
+
+.subtitle {
+  color: rgb(var(--solar-subtle-rgb));
+  margin: 0;
+  font-size: 1rem;
+  transition: color 0.9s ease;
+}
+
+.card {
+  background: rgb(var(--solar-card-bg-rgb));
+  border: 1px solid rgb(var(--solar-card-border-rgb));
+  border-radius: 6px;
+  padding: 18px;
+  box-shadow: 0 3px 8px rgba(var(--solar-shadow-rgb), 0.18);
+  transition: background-color 0.9s ease, border-color 0.9s ease, box-shadow 0.9s ease;
+}
+
+.card h2 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: rgb(var(--solar-text-rgb));
+  transition: color 0.9s ease;
+}
+
+.current .big {
+  font-size: clamp(2.6rem, 7vw, 4rem);
+  margin: 6px 0;
+  color: rgb(var(--solar-accent-rgb));
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  transition: color 0.9s ease;
+}
+
+.daily-stats {
+  margin-top: 10px;
+  font-size: 1rem;
+  color: rgb(var(--solar-subtle-rgb));
+  transition: color 0.9s ease;
+}
+
+.daily-stats p {
+  margin: 2px 0;
+}
+
+.status {
+  margin-top: 6px;
+  font-size: 0.95rem;
+  font-style: italic;
+}
+
+.status.ok {
+  color: rgb(var(--solar-ok-rgb));
+}
+
+.status.warning {
+  color: rgb(var(--solar-warning-rgb));
+}
+
+.chart-wrap {
+  position: relative;
+  height: 320px;
+  width: 100%;
+}
+
+#historyChart {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.site-footer {
+  font-size: 0.82rem;
+  color: rgb(var(--solar-subtle-rgb));
+  border-top: 1px solid rgb(var(--solar-card-border-rgb));
+  padding-top: 10px;
+  transition: color 0.9s ease, border-color 0.9s ease;
+}

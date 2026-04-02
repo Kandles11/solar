@@ -1,0 +1,13 @@
+{
+  "name": "solar-monitor-dashboard",
+  "version": "1.0.0",
+  "description": "Live solar production dashboard backed by Home Assistant",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
